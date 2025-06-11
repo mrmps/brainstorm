@@ -46,14 +46,14 @@
 :root {
   --radius: 0.75rem;
   /* Sophisticated palette */
-  --background: #FAF9F9; /* seasalt */
+  --background: #f5f5f5; /* seasalt */
   --foreground: #5F5F5F; /* davys-gray */
 
   --card: #FFFFFF; /* keep pure white cards */
   --card-foreground: #5F5F5F;
 
   /* Primary action – Celadon green */
-  --primary: #93D6B5; /* celadon-2 */
+  --primary: #2e7850; /* celadon-2 */
   --primary-foreground: #FFFFFF;
 
   /* Secondary accents – Mint cream */

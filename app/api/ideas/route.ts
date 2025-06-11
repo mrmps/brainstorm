@@ -15,6 +15,14 @@ interface Idea extends GeneratedIdea {
   rank: number;
 }
 
+if (!process.env.CONTEXTUAL_API_KEY) {
+  throw new Error("CONTEXTUAL_API_KEY is not set");
+}
+
+const CTXL_API_KEY = process.env.CONTEXTUAL_API_KEY;
+
+console.log("CTXL_API_KEY", CTXL_API_KEY);
+
 export async function POST(request: Request) {
   try {
     const { query } = await request.json();
@@ -51,7 +59,7 @@ async function generateIdeas(query: string) {
       
       // Generate ideas directly in a parseable format
       const { text } = await generateText({
-        model: openai("gpt-4o-mini"),
+        model: openai("gpt-4.1-mini"),
         prompt: `You are ${persona.name}: ${persona.perspective}
 
 The user is asking: "${query}"
@@ -64,16 +72,16 @@ Generate 10 unique, high-quality ideas that reflect your specific perspective an
 
 Try to come up with the best possible idea, not just the one that is the most relevant to your expertise. You are just a person in a room trying to solve a problem, and just happen to be very intelligent.
 
-Format your response using XML tags like this:
+You can add thoughts inside your response, but once your are ready to answer, make sure to format your ideas using XML tags like this:
 
 <idea>
 <title>Your compelling and specific title here</title>
-<description>Your detailed description here. Explain the idea thoroughly, including why it's valuable, how it works, and what makes it unique. Use multiple sentences to fully flesh out the concept. Be specific and actionable. This can be as long as needed to properly explain the idea.</description>
+<description>Your description here. Explain the idea thoroughly, including why it's valuable, how it works, and what makes it unique. Use multiple sentences to fully flesh out the concept. Be specific and actionable. This can be as long as needed to properly explain the idea.</description>
 </idea>
 
 <idea>
 <title>Next creative title</title>
-<description>Next detailed explanation with all the context and specifics needed to understand and implement this idea.</description>
+<description>Next explanation with all the context and specifics needed to understand and implement this idea.</description>
 </idea>
 
 Continue this pattern for all 10 ideas. Each idea must be wrapped in <idea> tags with <title> and <description> sub-tags.`,
@@ -103,60 +111,46 @@ Continue this pattern for all 10 ideas. Each idea must be wrapped in <idea> tags
       generation_ms: r.latency.generation_ms,
     }));
 
-    // Step 2: Prepare summary for ranking
-    stepStart("summary");
-    const summaryForRanking = allIdeas
-      .map(
-        (idea) =>
-          `ID: ${idea.id}\nTitle: ${idea.title}\nDescription: ${idea.description}`
-      )
-      .join("\n---\n");
-    stepEnd("summary");
-
-    // Step 3: Ranking
+    // Step 3: Ranking via Contextual.ai rerank API
     stepStart("ranking");
-    const rankingPrompt = `
-You are an expert at evaluating and ranking creative ideas for quality, novelty, and value.
-
-Given the following 50 ideas (each with an ID, title, description, and persona), select and order the best 50 ideas in the order you believe is best, from #1 (best) to #50 (least best). Only use the information provided.
-
-Return a JSON array of the IDs in your chosen order. Do not include any explanation or extra text.
-
-Ideas:
-${summaryForRanking}
-`;
-
     let bestIds: string[] = [];
-    let rankingLatencyMs = 0;
     try {
       const rankingStart = Date.now();
-      const { text: idsText } = await generateText({
-        model: openai("gpt-4o"),
-        prompt: rankingPrompt,
+      // Compose document strings (title + description)
+      const docs = allIdeas.map((idea) => `${idea.title} — ${idea.description}`);
+
+      const ctxlRes = await fetch("https://api.app.contextual.ai/v1/rerank", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${CTXL_API_KEY}`,
+        },
+        body: JSON.stringify({
+          query,
+          documents: docs,
+          model: "ctxl-rerank-v1-instruct",
+          top_n: 100,
+          instruction: "Rank documents by overall quality, novelty and potential value of the idea."
+        }),
       });
-      const rankingEnd = Date.now();
-      rankingLatencyMs = rankingEnd - rankingStart;
 
-      // Clean potential markdown/code-fence wrappers
-      let cleaned = idsText
-        .replace(/```json[\s\S]*?/i, "") // remove ```json prefix if present
-        .replace(/```/g, "") // remove closing fences
-        .trim();
-
-      // Extract first JSON array if additional text present
-      const arrMatch = cleaned.match(/\[[\s\S]*\]/);
-      if (arrMatch) {
-        cleaned = arrMatch[0];
+      if (!ctxlRes.ok) {
+        throw new Error(`Contextual rerank failed ${ctxlRes.status}`);
       }
 
-      bestIds = JSON.parse(cleaned);
+      const rerankData = await ctxlRes.json();
+      const indices: number[] = (rerankData.results as { index: number }[]).map((r) => r.index);
+
+      // indices refer to document positions (1-based?). API example shows 1. We'll assume 0-based? We'll guard.
+      bestIds = indices.map((idx) => allIdeas[idx]?.id).filter(Boolean) as string[];
+
+      const rankingEnd = Date.now();
+      timings["ranking_latency_ms"] = rankingEnd - rankingStart;
     } catch (err) {
-      // If ranking fails, fall back to the original order
-      console.error("Failed to get ranked IDs from large model, using default order.", err);
+      console.error("Contextual rerank failed, using default order.", err);
       bestIds = allIdeas.map((idea) => idea.id);
     }
     stepEnd("ranking");
-    timings["ranking_latency_ms"] = rankingLatencyMs;
 
     // Step 4: Reorder and finalize
     stepStart("finalize");
@@ -189,7 +183,6 @@ ${summaryForRanking}
     // Compose latency info
     const latency = {
       generation_total_ms: timings["generation_latency_ms"],
-      summary_ms: timings["summary_latency_ms"],
       ranking_ms: timings["ranking_latency_ms"],
       finalize_ms: timings["finalize_latency_ms"],
       per_persona: perPersonaLatency,

@@ -8,6 +8,15 @@ import {
   row3Prompts,
   ExamplePrompt,
 } from "@/lib/examplePrompts";
+import { stringSimilarity } from "string-similarity-js";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+
+// Import shadcn/ui Sheet (sidebar) components
+import { Sheet, SheetContent, SheetClose, SheetTitle } from "@/components/ui/sheet";
+import { Progress } from "@/components/ui/progress";
+import { LoadingProgress } from "@/components/loading-progress";
 
 interface Idea {
   id: string;
@@ -24,6 +33,10 @@ export default function Home() {
   const [loading, setLoading] = React.useState(false);
   const [hasSearched, setHasSearched] = React.useState(false);
   const [latency, setLatency] = React.useState<number | null>(null);
+
+  // Sidebar state
+  const [selectedIdea, setSelectedIdea] = React.useState<Idea | null>(null);
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   const minChars = 30;
   const progress = Math.min((query.length / minChars) * 100, 100);
@@ -88,8 +101,112 @@ export default function Home() {
     return [...results].sort((a, b) => a.rank - b.rank);
   }, [results]);
 
+  // Compute similar ideas for sidebar
+  const similarIdeas = React.useMemo(() => {
+    if (!selectedIdea) return [] as Idea[];
+    // compute similarity on title+description
+    const sims = results
+      .filter((i) => i.id !== selectedIdea.id)
+      .map((idea) => ({
+        idea,
+        score: stringSimilarity(
+          `${selectedIdea.title} ${selectedIdea.description}`,
+          `${idea.title} ${idea.description}`
+        ),
+      }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 20)
+      .map((s) => s.idea);
+    return sims;
+  }, [selectedIdea, results]);
+
+  // Handler for card click
+  function handleCardClick(idea: Idea) {
+    setSelectedIdea(idea);
+    setSidebarOpen(true);
+  }
+
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Sidebar for selected idea */}
+      <Sheet open={sidebarOpen} onOpenChange={open => {
+        setSidebarOpen(open);
+        if (!open) setTimeout(() => setSelectedIdea(null), 200);
+      }}>
+        <SheetContent side="right" className="max-w-md w-full p-0 flex flex-col">
+          {/* Visually hidden title for accessibility */}
+          <SheetTitle className="sr-only">{selectedIdea?.title}</SheetTitle>
+
+          {selectedIdea ? (
+            <>
+              {/* HEADER */}
+              <div className="bg-primary/10 px-6 py-4 backdrop-blur-md sticky top-0 z-10">
+                <div className="text-primary font-mono text-xs">
+                  {typeof selectedIdea.number === "number" ? (
+                    <>#{selectedIdea.number}</>
+                  ) : (
+                    <>#{selectedIdea.rank}</>
+                  )}
+                </div>
+                <h2 className="text-lg font-semibold leading-snug mt-1">
+                  {selectedIdea.title}
+                </h2>
+                <p className="text-xs text-muted-foreground italic mt-1">
+                  {selectedIdea.persona}
+                </p>
+              </div>
+
+              {/* BODY SCROLL AREA */}
+              <ScrollArea className="flex-1 px-6 py-4" style={{ maxHeight: "calc(100vh - 120px)", minHeight: 0 }}>
+                <div className="flex flex-col gap-8" style={{ minHeight: 0 }}>
+                  <div>
+                    <p className="text-sm text-foreground whitespace-pre-line leading-relaxed">
+                      {selectedIdea.description}
+                    </p>
+                  </div>
+
+                  {similarIdeas.length > 0 && (
+                    <div className="mt-0">
+                      <Separator className="my-4" />
+                      <h4 className="text-sm font-semibold text-foreground mb-3">Similar ideas</h4>
+                      <ul className="space-y-3">
+                        {similarIdeas.map((idea) => (
+                          <li key={idea.id}>
+                            <button
+                              onClick={() => setSelectedIdea(idea)}
+                              className="block w-full text-left bg-secondary/60 hover:bg-secondary px-3 py-2 rounded-md transition-colors"
+                            >
+                              <p className="text-sm font-medium text-foreground">
+                                {idea.title}
+                              </p>
+                              <p className="text-xs text-muted-foreground line-clamp-3">
+                                {idea.description}
+                              </p>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+
+              {/* FOOTER ACTIONS */}
+              <div className="p-4 border-t border-border/60 flex justify-end gap-3 bg-background/80 backdrop-blur-md sticky bottom-0">
+                <SheetClose asChild>
+                  <Button variant="outline">Close</Button>
+                </SheetClose>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-full text-muted-foreground">
+              No idea selected
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+
       {/* Navigation */}
       <nav className="border-b border-border/60">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -109,10 +226,10 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="px-6 py-24">
+      <section className="px-6 py-24 pb-12">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-5xl font-bold tracking-tight mb-6 leading-tight">
-            <span className="text-zinc-900">Every possibility.</span> <span className="text-zinc-700 italic font-extrabold" style={{ letterSpacing: "0.02em" }}>Ranked.</span>
+            <span className="text-zinc-800">Every possibility.</span> <span className="text-primary italic font-extrabold" style={{ letterSpacing: "0.02em" }}>Ranked.</span>
           </h1>
           <p className="text-lg text-zinc-600 mb-6 max-w-2xl mx-auto leading-relaxed">
             Generate 1,000+ answers to any question, then see the best ones first. No more wondering if there&#39;s something better.
@@ -140,17 +257,11 @@ export default function Home() {
                     }}
                   />
                   {/* Subtle progress bar below the textarea enclosure */}
-                  <div className="absolute left-0 right-0 bottom-[-6px] h-1.5 w-full rounded-b-3xl overflow-hidden pointer-events-none mx-6 max-w-[calc(100%-44px)]">
-                    <div
-                      className="h-full transition-all duration-300 ease-out rounded-b-3xl"
-                      style={{
-                        width: `${progress}%`,
-                        background: `linear-gradient(90deg, #b4e1fa 0%, #38bdf8 50%, #22d3ee 100%)`,
-                        opacity: progress > 0 ? 0.7 : 0.2,
-                        transition: "width 0.3s cubic-bezier(0.4,0,0.2,1), background 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.3s"
-                      }}
-                    />
-                  </div>
+                  {progress > 0 &&  !loading && (
+                    <div className="absolute left-0 right-0 bottom-[-1px] pointer-events-none mx-6 max-w-[calc(100%-44px)]">
+                      <Progress value={progress} className="rounded-b-3xl" />
+                    </div>
+                  )}
                   <div className="flex items-center gap-2 mt-5 w-full justify-between px-3 pb-3">
                     <div className="flex items-center gap-3 flex-1">
                       <div className="flex items-center gap-2 flex-1 max-w-xs">
@@ -267,9 +378,36 @@ export default function Home() {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               {loading ? (
-                <div className="space-y-2">
-                  <div className="text-lg font-medium">Generating possibilities...</div>
-                  <div className="text-sm text-muted-foreground">Running through a dozen AI models</div>
+                <div className="space-y-4 flex flex-col items-center justify-center min-h-[120px]">
+                  <div className="relative flex items-center justify-center h-12 w-12 mb-2">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-gradient-to-tr from-primary/30 to-primary/70 opacity-30 animate-pulse" />
+                    <svg
+                      className="animate-spin h-10 w-10 text-primary"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-20"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-80"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                      />
+                    </svg>
+                  </div>
+                  {/* Tasteful progress bar */}
+                 <LoadingProgress isActive={loading} />
+                  <div className="text-lg font-medium animate-pulse">Generating possibilities...</div>
+                  <div className="text-sm text-muted-foreground flex items-center gap-2">
+                    <span className="animate-fade animate-infinite animate-duration-1500">Running through a dozen AI models</span>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -277,7 +415,7 @@ export default function Home() {
                   <div className="text-sm text-muted-foreground">Showing the best results first</div>
                   {latency !== null && (
                     <div className="text-xs text-muted-foreground mt-2">
-                      Latency: {latency.toFixed(0)} ms (@route.ts)
+                      Latency: {latency.toFixed(0)} ms
                     </div>
                   )}
                 </div>
@@ -293,32 +431,25 @@ export default function Home() {
                   />
                 ))
               ) : (
-                sortedResults.map((item) => (
+                        sortedResults.map((item) => (
                   <Card
                     key={item.id}
-                    className="p-6 border border-border/60 rounded-xl bg-white/80 backdrop-blur-sm hover:shadow-lg hover:border-border transition-all cursor-pointer group"
+                    className="p-3 border border-border/40 rounded-lg bg-white/90 hover:shadow-md hover:border-primary/60 transition-all cursor-pointer group flex flex-col gap-1 min-h-[80px] focus:ring-2 focus:ring-primary/40 outline-none relative"
+                    onClick={() => handleCardClick(item)}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`View details for ${item.title}`}
                   >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="text-sm font-mono text-muted-foreground">
-                        {/* Show number if present, else rank */}
-                        {typeof item.number === "number" ? (
-                          <>#{item.number}</>
-                        ) : (
-                          <>#{item.rank}</>
-                        )}
-                      </div>
-                      <div className="text-right text-xs text-muted-foreground italic">
-                        {item.persona}
-                      </div>
-                    </div>
-                    
-                    <h3 className="font-semibold text-foreground mb-3 line-clamp-2 group-hover:text-primary transition-colors">
+                    {/* Number badge in top-right, out of main flow */}
+                    <span className="absolute top-2 right-2 text-xs font-mono text-primary/80 bg-primary/10 rounded px-2 py-0.5 shadow-sm z-10">
+                      {typeof item.number === "number" ? `#${item.number}` : `#${item.rank}`}
+                    </span>
+                    <div className="font-semibold text-base text-foreground group-hover:text-primary transition-colors pr-10">
                       {item.title}
-                    </h3>
-                    
-                    <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+                    </div>
+                    <div className="text-xs text-muted-foreground line-clamp-2 leading-snug">
                       {item.description}
-                    </p>
+                    </div>
                   </Card>
                 ))
               )}
