@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { generateText, generateObject } from "ai";
+import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { z } from "zod";
 import personas from "@/lib/personas";
 
 // Typesafe interfaces
@@ -15,17 +14,6 @@ interface Idea extends GeneratedIdea {
   persona: string;
   rank: number;
 }
-
-// Extraction schema for a single idea
-const ideaExtractSchema = z.object({
-  title: z.string().describe("A concise, compelling title for the idea"),
-  description: z.string().describe("A detailed description explaining the idea and its value proposition"),
-});
-
-// Extraction schema for a list of ideas
-const ideasExtractSchema = z.object({
-  ideas: z.array(ideaExtractSchema)
-});
 
 export async function POST(request: Request) {
   try {
@@ -56,13 +44,14 @@ async function generateIdeas(query: string) {
   };
 
   try {
-    // Step 1: Generate ideas for each persona
+    // Step 1: Generate ideas for each persona with structured output
     stepStart("generation");
     const ideaPromises = personas.map(async (persona) => {
-      // 1. Generate ideas as plain text using openai/gpt-4o-mini
       const genStart = Date.now();
+      
+      // Generate ideas directly in a parseable format
       const { text } = await generateText({
-        model: openai("gpt-4.1-mini"),
+        model: openai("gpt-4o-mini"),
         prompt: `You are ${persona.name}: ${persona.perspective}
 
 The user is asking: "${query}"
@@ -73,38 +62,32 @@ Generate 10 unique, high-quality ideas that reflect your specific perspective an
 3. Be different from obvious or common suggestions
 4. Include specific details that make it compelling
 
-Try to come up with the best possible idea, not just the one that is the most relevant to your espertise. You are just a person in a room trying to solve a problem, and just happen to be very intelligent.
+Try to come up with the best possible idea, not just the one that is the most relevant to your expertise. You are just a person in a room trying to solve a problem, and just happen to be very intelligent.
 
-Format as a numbered list. Each item should have a title and a detailed explanation.`,
+Format your response using XML tags like this:
+
+<idea>
+<title>Your compelling and specific title here</title>
+<description>Your detailed description here. Explain the idea thoroughly, including why it's valuable, how it works, and what makes it unique. Use multiple sentences to fully flesh out the concept. Be specific and actionable. This can be as long as needed to properly explain the idea.</description>
+</idea>
+
+<idea>
+<title>Next creative title</title>
+<description>Next detailed explanation with all the context and specifics needed to understand and implement this idea.</description>
+</idea>
+
+Continue this pattern for all 10 ideas. Each idea must be wrapped in <idea> tags with <title> and <description> sub-tags.`,
       });
+      
       const genEnd = Date.now();
 
-      // 2. Extract ideas from the generated text using gpt-4.1-nano
-      const extractStart = Date.now();
-      const extraction = await generateObject({
-        model: openai("gpt-4.1-nano"),
-        schema: ideasExtractSchema,
-        prompt: `Extract the list of ideas from the following text. For each idea, extract the title and a detailed description. If the explanation is missing, use the title as the description.
+      // Parse the structured text directly - no second LLM call needed
+      const ideas = parseIdeasXML(text, persona.name);
 
-Text:
-${text}
-`,
-      });
-      const extractEnd = Date.now();
-
-      // 3. Map extracted ideas to our Idea type (without rank)
-      const ideas = extraction.object.ideas.map((idea: GeneratedIdea): Omit<Idea, "rank"> => ({
-        ...idea,
-        persona: persona.name,
-        id: crypto.randomUUID(),
-      }));
-
-      // Return per-persona latency info for debugging
       return {
         ideas,
         latency: {
           generation_ms: genEnd - genStart,
-          extraction_ms: extractEnd - extractStart,
         },
         persona: persona.name,
       };
@@ -118,7 +101,6 @@ ${text}
     const perPersonaLatency = allIdeasResults.map(r => ({
       persona: r.persona,
       generation_ms: r.latency.generation_ms,
-      extraction_ms: r.latency.extraction_ms,
     }));
 
     // Step 2: Prepare summary for ranking
@@ -136,7 +118,7 @@ ${text}
     const rankingPrompt = `
 You are an expert at evaluating and ranking creative ideas for quality, novelty, and value.
 
-Given the following 50 ideas (each with an ID, title, description, and persona), select and order the best 50 ideasin the order you believe is best, from #1 (best) to #50 (least best). Only use the information provided.
+Given the following 50 ideas (each with an ID, title, description, and persona), select and order the best 50 ideas in the order you believe is best, from #1 (best) to #50 (least best). Only use the information provided.
 
 Return a JSON array of the IDs in your chosen order. Do not include any explanation or extra text.
 
@@ -149,7 +131,7 @@ ${summaryForRanking}
     try {
       const rankingStart = Date.now();
       const { text: idsText } = await generateText({
-        model: openai("gpt-4.1"),
+        model: openai("gpt-4o"),
         prompt: rankingPrompt,
       });
       const rankingEnd = Date.now();
@@ -221,6 +203,30 @@ ${summaryForRanking}
     console.error("Error generating ideas:", error);
     return NextResponse.json({ error: "Failed to generate ideas" }, { status: 500 });
   }
+}
+
+// XML parser function that extracts ideas from XML-structured format
+function parseIdeasXML(text: string, personaName: string): Omit<Idea, "rank">[] {
+  const ideas: Omit<Idea, "rank">[] = [];
+  
+  // Match all <idea> blocks
+  const ideaMatches = text.matchAll(/<idea>\s*<title>([\s\S]*?)<\/title>\s*<description>([\s\S]*?)<\/description>\s*<\/idea>/g);
+  
+  for (const match of ideaMatches) {
+    const title = match[1].trim();
+    const description = match[2].trim();
+    
+    if (title && description) {
+      ideas.push({
+        id: crypto.randomUUID(),
+        title,
+        description,
+        persona: personaName,
+      });
+    }
+  }
+  
+  return ideas;
 }
 
 // Modify GET to reuse generateIdeas

@@ -43,15 +43,31 @@ export default function Home() {
       });
       const end = performance.now();
       if (!res.ok) throw new Error("Request failed");
-      // Try to get latency from response header, fallback to client measured
-      const serverLatency = res.headers.get("x-route-latency-ms");
-      if (serverLatency !== null) {
-        setLatency(Number(serverLatency));
+      const data = await res.json();
+
+      // If API returns { ideas, latency }
+      let ideas: Idea[];
+      if (Array.isArray(data)) {
+        ideas = data as Idea[];
       } else {
-        setLatency(end - start);
+        ideas = data.ideas as Idea[];
+        // optional latency from payload
+        if (data.latency && typeof data.latency === "object" && data.latency.ranking_ms) {
+          setLatency(data.latency.ranking_ms as number);
+        }
       }
-      const data = (await res.json()) as Idea[];
-      setResults(data);
+
+      // fallback to header/client latency
+      if (latency === null) {
+        const serverLatency = res.headers.get("x-route-latency-ms");
+        if (serverLatency !== null) {
+          setLatency(Number(serverLatency));
+        } else if (latency === null) {
+          setLatency(end - start);
+        }
+      }
+
+      setResults(ideas);
     } catch (error) {
       console.error(error);
       setResults([]);
