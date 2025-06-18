@@ -76,7 +76,7 @@ Example response (abridged):
     { "title": "Dynamic Portion-Sizing Algorithm", "rank": 2, ... },
     // …
   ],
-  "latency": { "total_ms": 1460, "generation_total_ms": 1020, "ranking_ms": 310 }
+  "latency": { "total_ms": 40060, "generation_total_ms": 39000, "ranking_ms": 1060 }
 }
 ```
 
