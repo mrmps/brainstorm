@@ -67,13 +67,14 @@ async function generateIdeas(query: string) {
     const ideaPromises = personas.map(async (persona) => {
       const genStart = Date.now();
       
-      // Generate ideas directly in a parseable format
-      const completion = await openai.chat.completions.create({
-        model: "deepseek/deepseek-v3-0324/fp-8",
-        messages: [
-          {
-            role: "user",
-            content: `You are ${persona.name}: ${persona.thinkingTechnique}
+      try {
+        // Generate ideas directly in a parseable format
+        const completion = await openai.chat.completions.create({
+          model: "deepseek/deepseek-v3-0324/fp-8",
+          messages: [
+            {
+              role: "user",
+              content: `You are ${persona.name}: ${persona.thinkingTechnique}
 
 The user is asking: "${query}"
 
@@ -98,34 +99,63 @@ You can add thoughts inside your response, but once your are ready to answer, ma
 </idea>
 
 Continue this pattern for all 10 ideas. Each idea must be wrapped in <idea> tags with <description> and <title> sub-tags.`
-          }
-        ],
-        temperature: 0.8,
-      });
-      
-      const genEnd = Date.now();
-      const text = completion.choices[0]?.message?.content || "";
+            }
+          ],
+          temperature: 0.8,
+        });
+        
+        const genEnd = Date.now();
+        const text = completion.choices[0]?.message?.content || "";
 
-      // Parse the structured text directly - no second LLM call needed
-      const ideas = parseIdeasXML(text, persona.name);
+        // Parse the structured text directly - no second LLM call needed
+        const ideas = parseIdeasXML(text, persona.name);
 
-      return {
-        ideas,
-        latency: {
-          generation_ms: genEnd - genStart,
-        },
-        persona: persona.name,
-      };
+        return {
+          ideas,
+          latency: {
+            generation_ms: genEnd - genStart,
+          },
+          persona: persona.name,
+          success: true,
+        };
+      } catch (error) {
+        console.error(`Failed to generate ideas for persona ${persona.name}:`, error);
+        const genEnd = Date.now();
+        return {
+          ideas: [],
+          latency: {
+            generation_ms: genEnd - genStart,
+          },
+          persona: persona.name,
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        };
+      }
     });
 
     const allIdeasResults = await Promise.all(ideaPromises);
     stepEnd("generation");
 
-    // Flatten ideas and collect per-persona latency
-    let allIdeas: Omit<Idea, "rank">[] = allIdeasResults.flatMap(r => r.ideas);
+    // Flatten ideas and collect per-persona latency, filtering out failed requests
+    const successfulResults = allIdeasResults.filter(r => r.success);
+    const failedResults = allIdeasResults.filter(r => !r.success);
+    
+    // Log failed requests but continue with successful ones
+    if (failedResults.length > 0) {
+      console.warn(`${failedResults.length} persona requests failed:`, failedResults.map(r => ({ persona: r.persona, error: r.error })));
+    }
+
+    // If all requests failed, return an error
+    if (successfulResults.length === 0) {
+      console.error("All persona requests failed");
+      return NextResponse.json({ error: "Failed to generate any ideas" }, { status: 500 });
+    }
+
+    let allIdeas: Omit<Idea, "rank">[] = successfulResults.flatMap(r => r.ideas);
     const perPersonaLatency = allIdeasResults.map(r => ({
       persona: r.persona,
       generation_ms: r.latency.generation_ms,
+      success: r.success,
     }));
 
     // === FILTER OUT NEAR-DUPLICATE IDEAS (almost exactly the same) ===
@@ -228,6 +258,8 @@ Continue this pattern for all 10 ideas. Each idea must be wrapped in <idea> tags
       ranking_ms: timings["ranking_latency_ms"],
       finalize_ms: timings["finalize_latency_ms"],
       per_persona: perPersonaLatency,
+      successful_personas: successfulResults.length,
+      failed_personas: failedResults.length,
     };
 
     const response = NextResponse.json({
