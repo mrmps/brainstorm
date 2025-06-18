@@ -88,16 +88,16 @@ Try to come up with the best possible idea, not just the one that is the most re
 You can add thoughts inside your response, but once your are ready to answer, make sure to format your ideas using XML tags like this:
 
 <idea>
-<title>Your compelling and specific title here</title>
 <description>Your description here. Explain the idea thoroughly, including why it's valuable, how it works, and what makes it unique. Use multiple sentences to fully flesh out the concept. Be specific and actionable. This can be as long as needed to properly explain the idea.</description>
+<title>Your compelling and specific title here</title>
 </idea>
 
 <idea>
-<title>Next creative title</title>
 <description>Next explanation with all the context and specifics needed to understand and implement this idea.</description>
+<title>Next creative title</title>
 </idea>
 
-Continue this pattern for all 10 ideas. Each idea must be wrapped in <idea> tags with <title> and <description> sub-tags.`
+Continue this pattern for all 10 ideas. Each idea must be wrapped in <idea> tags with <description> and <title> sub-tags.`
           }
         ],
         temperature: 0.8,
@@ -249,15 +249,15 @@ Continue this pattern for all 10 ideas. Each idea must be wrapped in <idea> tags
 function parseIdeasXML(text: string, personaName: string): Omit<Idea, "rank">[] {
   const ideas: Omit<Idea, "rank">[] = [];
   
-  // Match all <idea> blocks
-  const ideaMatches = text.matchAll(/<idea>\s*<title>([\s\S]*?)<\/title>\s*<description>([\s\S]*?)<\/description>\s*<\/idea>/g);
+  // Match all <idea> blocks with description first, then title
+  const ideaMatches = text.matchAll(/<idea>\s*<description>([\s\S]*?)<\/description>\s*<title>([\s\S]*?)<\/title>\s*<\/idea>/g);
   
   // Regex used to detect any leftover XML tags inside the extracted content.
   const leftoverTagRegex = /<\s*\/?\s*(idea|title|description)\b/i;
   
   for (const match of ideaMatches) {
-    const title = match[1].trim();
-    const description = match[2].trim();
+    const description = match[1].trim();
+    const title = match[2].trim();
 
     // Skip ideas that still contain un-parsed XML markers – indicates malformed input.
     if (!title || !description) continue;
