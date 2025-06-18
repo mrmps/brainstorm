@@ -22,6 +22,8 @@ import PoweredByBanner from "@/components/powered-by-banner";
 import { ArrowRight, CheckCircle, ListChecks, MessageCircleQuestion, Users  } from "lucide-react";
 import Navbar from "@/components/navbar";
 import Image from "next/image";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface Idea {
   id: string;
@@ -167,9 +169,21 @@ export default function Home() {
               <ScrollArea className="flex-1 px-6 py-4" style={{ maxHeight: "calc(100vh - 120px)", minHeight: 0 }}>
                 <div className="flex flex-col gap-8" style={{ minHeight: 0 }}>
                   <div>
-                    <p className="text-sm text-foreground whitespace-pre-line leading-relaxed">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      className="text-sm text-foreground leading-relaxed space-y-2"
+                      components={{
+                        ul: (props: React.HTMLAttributes<HTMLUListElement>) => <ul className="list-disc pl-5" {...props} />,
+                        ol: (props: React.HTMLAttributes<HTMLOListElement>) => <ol className="list-decimal pl-5" {...props} />,
+                        li: (props: React.LiHTMLAttributes<HTMLLIElement>) => <li className="mb-1" {...props} />,
+                        h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => <h1 className="text-lg font-semibold mt-4" {...props} />,
+                        h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => <h2 className="text-base font-semibold mt-3" {...props} />,
+                        h3: (props: React.HTMLAttributes<HTMLHeadingElement>) => <h3 className="text-sm font-semibold mt-2" {...props} />,
+                        p: (props: React.HTMLAttributes<HTMLParagraphElement>) => <p className="whitespace-pre-line" {...props} />,
+                      }}
+                    >
                       {selectedIdea.description}
-                    </p>
+                    </ReactMarkdown>
                   </div>
 
                   {similarIdeas.length > 0 && (
@@ -422,9 +436,16 @@ export default function Home() {
                     <div className="font-semibold text-base text-foreground group-hover:text-primary transition-colors pr-10">
                       {item.title}
                     </div>
-                    <div className="text-xs text-muted-foreground line-clamp-2 leading-snug">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      className="text-xs text-muted-foreground line-clamp-2 leading-snug"
+                      components={{
+                        p: (props: React.HTMLAttributes<HTMLParagraphElement>) => <p {...props} />,
+                        li: (props: React.LiHTMLAttributes<HTMLLIElement>) => <li className="list-disc ml-4" {...props} />,
+                      }}
+                    >
                       {item.description}
-                    </div>
+                    </ReactMarkdown>
                   </Card>
                 ))
               )}
