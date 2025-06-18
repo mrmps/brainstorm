@@ -230,7 +230,7 @@ export default function Home() {
           <div className="mb-8 flex items-center justify-center">
             <div className="group relative bg-gradient-to-r from-primary/15 via-primary/10 to-primary/5 border border-primary/30 rounded-full px-8 py-2 flex items-center gap-3 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105">
               <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <a href="https://inference.com" target="_blank" rel="noopener noreferrer" className="relative flex items-center gap-2 text-sm font-medium text-zinc-700 hover:text-primary transition-colors duration-200">
+              <a href="https://inference.net" target="_blank" rel="noopener noreferrer" className="relative flex items-center gap-2 text-sm font-medium text-zinc-700 hover:text-primary transition-colors duration-200">
                 <span className="tracking-wide">Powered by</span>
                 <Image src="/inf.png" alt="Inference" width={80} height={24} priority />
               </a>
