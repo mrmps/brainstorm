@@ -16,7 +16,12 @@ import { Button } from "@/components/ui/button";
 // Import shadcn/ui Sheet (sidebar) components
 import { Sheet, SheetContent, SheetClose, SheetTitle } from "@/components/ui/sheet";
 import { Progress } from "@/components/ui/progress";
-import { LoadingProgress } from "@/components/loading-progress";
+import GenerationLoading from "@/components/generation-loading";
+import FAQ from "@/components/faq";
+import PoweredByBanner from "@/components/powered-by-banner";
+import { ArrowRight, CheckCircle, ListChecks, MessageCircleQuestion, Users  } from "lucide-react";
+import Navbar from "@/components/navbar";
+import Image from "next/image";
 
 interface Idea {
   id: string;
@@ -129,6 +134,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PoweredByBanner />
       {/* Sidebar for selected idea */}
       <Sheet open={sidebarOpen} onOpenChange={open => {
         setSidebarOpen(open);
@@ -208,22 +214,7 @@ export default function Home() {
       </Sheet>
 
       {/* Navigation */}
-      <nav className="border-b border-border/60">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="font-semibold text-foreground tracking-tight">Brainstorm</div>
-          <div className="flex items-center gap-8 text-sm">
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-              Examples
-            </a>
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-              About
-            </a>
-            <button className="bg-foreground text-background px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">
-              Sign in
-            </button>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="px-6 py-24 pb-12">
@@ -232,14 +223,28 @@ export default function Home() {
             <span className="text-zinc-800">Every possibility.</span> <span className="text-primary italic font-extrabold" style={{ letterSpacing: "0.02em" }}>Ranked.</span>
           </h1>
           <p className="text-lg text-zinc-600 mb-6 max-w-2xl mx-auto leading-relaxed">
-            Generate 1,000+ answers to any question, then see the best ones first. No more wondering if there&#39;s something better.
+            Generate 500+ answers to any question, then see the best ones first. No more wondering if there&#39;s something better.
           </p>
-        
+          
+          {/* Powered by Inference section */}
+          <div className="mb-8 flex items-center justify-center">
+            <div className="group relative bg-gradient-to-r from-primary/15 via-primary/10 to-primary/5 border border-primary/30 rounded-full px-8 py-2 flex items-center gap-3 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <a href="https://inference.com" target="_blank" rel="noopener noreferrer" className="relative flex items-center gap-2 text-sm font-medium text-zinc-700 hover:text-primary transition-colors duration-200">
+                <span className="tracking-wide">Powered by</span>
+                <Image src="/inf.png" alt="Inference" width={80} height={24} priority />
+              </a>
+              <div className="relative">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                <div className="absolute inset-0 w-2 h-2 bg-primary rounded-full animate-ping opacity-30"></div>
+              </div>
+            </div>
+          </div>
           {/* Input Section */}
-          <div className="relative inset-x-0 bottom-0 z-50 mx-auto w-full max-w-3xl" style={{ transform: "none", transformOrigin: "50% 50% 0px", opacity: 1 }}>
+          <div className="relative inset-x-0 bottom-0 z-20 mx-auto w-full max-w-3xl" style={{ transform: "none", transformOrigin: "50% 50% 0px", opacity: 1 }}>
             <div className="relative flex w-full flex-col gap-4">
               <div className="relative order-2 px-2 pb-3 sm:pb-4 md:order-1">
-                <div className="border-input rounded-3xl border bg-popover relative z-10 p-0 pt-1 shadow-xs backdrop-blur-xl">
+                <div className="border-input rounded-3xl border bg-popover relative z-10 p-0 pt-1 shadow-xs backdrop-blur-xl ring-1 ring-zinc-200">
                   <textarea
                     data-slot="textarea"
                     className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive flex field-sizing-content rounded-md border px-3 py-2 transition-[color,box-shadow] disabled:cursor-not-allowed disabled:opacity-50 w-full resize-none border-none bg-transparent shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 overflow-y-auto min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
@@ -378,44 +383,14 @@ export default function Home() {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               {loading ? (
-                <div className="space-y-4 flex flex-col items-center justify-center min-h-[120px]">
-                  <div className="relative flex items-center justify-center h-12 w-12 mb-2">
-                    <span className="absolute inline-flex h-full w-full rounded-full bg-gradient-to-tr from-primary/30 to-primary/70 opacity-30 animate-pulse" />
-                    <svg
-                      className="animate-spin h-10 w-10 text-primary"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-20"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-80"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                      />
-                    </svg>
-                  </div>
-                  {/* Tasteful progress bar */}
-                 <LoadingProgress isActive={loading} />
-                  <div className="text-lg font-medium animate-pulse">Generating possibilities...</div>
-                  <div className="text-sm text-muted-foreground flex items-center gap-2">
-                    <span className="animate-fade animate-infinite animate-duration-1500">Running through a dozen AI models</span>
-                  </div>
-                </div>
+                <GenerationLoading isActive={loading} />
               ) : (
                 <div className="space-y-2">
                   <div className="text-lg font-medium">Found {results.length.toLocaleString()} possibilities</div>
                   <div className="text-sm text-muted-foreground">Showing the best results first</div>
                   {latency !== null && (
                     <div className="text-xs text-muted-foreground mt-2">
-                      Latency: {latency.toFixed(0)} ms
+                      Latency: {latency?.toFixed(0)} ms
                     </div>
                   )}
                 </div>
@@ -459,22 +434,84 @@ export default function Home() {
       )}
 
       {/* How it works */}
-      <section className="px-6 py-24 bg-secondary/30">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-foreground mb-16">How it works</h2>
-          
-          <div className="grid md:grid-cols-4 gap-8">
+      <section className="relative px-6 py-28 pb-12 bg-gradient-to-b from-secondary/15 via-background to-background overflow-hidden">
+        {/* Decorative SVG background */}
+        <svg
+          className="absolute left-1/2 top-0 -translate-x-1/2 -z-10 opacity-30 blur-2xl"
+          width="1200"
+          height="320"
+          viewBox="0 0 1200 320"
+          fill="none"
+        >
+          <ellipse cx="600" cy="160" rx="600" ry="120" fill="url(#howitworks-gradient)" />
+          <defs>
+            <linearGradient id="howitworks-gradient" x1="0" y1="0" x2="1200" y2="320" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#2E7850" />
+              <stop offset="1" stopColor="#DFEAE5" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        <div className="max-w-5xl mx-auto text-center relative z-10">
+          <div className="inline-flex items-center rounded-full border px-3 py-1 bg-primary text-primary-foreground text-xs font-semibold tracking-wide shadow-sm mb-6">
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 20 20">
+              <path d="M10 2v16m8-8H2" />
+            </svg>
+            How it works
+          </div>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-zinc-700 mb-6">
+            From Question to <span className="text-primary">Best Answer</span> in Seconds
+          </h2>
+          <p className="max-w-2xl mx-auto text-lg text-zinc-600 mb-20">
+            Our process combines the creativity of multiple AI models with advanced ranking to deliver the most relevant, high-quality answers—every time.
+          </p>
+
+          {/* Import lucide icons at the top of your file:
+              import { MessageCircleQuestion, Users, ListChecks, CheckCircle } from "lucide-react";
+          */}
+          <div className="relative grid md:grid-cols-4 gap-10">
             {[
-              { step: "01", title: "You ask", desc: "Any question with multiple possible answers" },
-              { step: "02", title: "We generate", desc: "12 different AI models create thousands of possibilities" },
-              { step: "03", title: "We rank", desc: "Every option scored for quality and relevance" },
-              { step: "04", title: "You choose", desc: "From the definitively best options, in order" }
-            ].map(({ step, title, desc }) => (
-              <div key={step} className="space-y-4">
-                <div className="w-12 h-12 rounded-full bg-primary/10 text-primary font-mono text-sm flex items-center justify-center mx-auto">
-                  {step}
+              {
+                step: "01",
+                title: "You ask",
+                desc: "Pose any open-ended question—brainstorm, name, or solve. The more detail, the better.",
+                icon: (
+                  <MessageCircleQuestion className="w-7 h-7 text-primary" strokeWidth={2} />
+                ),
+              },
+              {
+                step: "02",
+                title: "We generate",
+                desc: "multiple creative AI personas each create 10 unique ideas, giving you a diverse pool of possibilities.",
+                icon: (
+                  <Users className="w-7 h-7 text-primary" strokeWidth={2} />
+                ),
+              },
+              {
+                step: "03",
+                title: "We rank",
+                desc: "Every idea is scored for quality, creativity, and relevance using a specialized reranking model.",
+                icon: (
+                  <ListChecks className="w-7 h-7 text-primary" strokeWidth={2} />
+                ),
+              },
+              {
+                step: "04",
+                title: "You choose",
+                desc: "Browse the top-ranked results—instantly see the best options, ready for your next move.",
+                icon: (
+                  <CheckCircle className="w-7 h-7 text-primary" strokeWidth={2} />
+                ),
+              },
+            ].map(({ step, title, desc, icon }) => (
+              <div key={step} className="space-y-5">
+                {/* Icon bubble */}
+                <div className="w-16 h-16 mx-auto flex items-center justify-center rounded-full bg-white ring-1 ring-black/5">
+                  {icon}             
                 </div>
-                <h3 className="font-semibold text-foreground">{title}</h3>
+                {/* Step label */}
+                <p className="font-mono text-xs uppercase tracking-wider text-primary/70">{step}</p>
+                <h3 className="text-lg font-semibold text-foreground">{title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
               </div>
             ))}
@@ -482,24 +519,46 @@ export default function Home() {
         </div>
       </section>
 
+      <FAQ />
+
+      <section className="relative px-6 py-28 bg-gradient-to-b from-primary via-zinc-900 to-black rounded-t-[20px] shadow-md text-white text-center">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-extrabold mb-6">Ready to brainstorm better?</h2>
+          <p className="max-w-2xl mx-auto text-lg opacity-80 mb-10">
+            Start your first brainstorm now and watch the top ideas rise to the top—instantly.
+          </p>
+          <button
+            onClick={() => {
+              const textarea = document.querySelector('textarea');
+              if (textarea) (textarea as HTMLTextAreaElement).focus();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="inline-flex items-center gap-2 bg-white text-black font-semibold px-6 py-3 rounded-full shadow-md hover:opacity-90 transition"
+          >
+            Get started
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer className="border-t border-border/60 px-6 py-12">
+      <footer className="px-6 py-12 bg-black">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
-            <p className="text-2xl font-semibold text-foreground mb-2">
+            <p className="text-2xl font-semibold text-zinc-100 mb-2">
               Stop settling for the first answer.
             </p>
-            <p className="text-muted-foreground">
+            <p className="text-zinc-400">
               The best option is ranked #1. Always.
             </p>
           </div>
           
           <div className="flex flex-wrap justify-center gap-8 text-sm text-muted-foreground">
-            <a href="#" className="hover:text-foreground transition-colors">About</a>
+            {/* <a href="#" className="hover:text-foreground transition-colors">About</a>
             <a href="#" className="hover:text-foreground transition-colors">API</a>
             <a href="#" className="hover:text-foreground transition-colors">Examples</a>
             <a href="#" className="hover:text-foreground transition-colors">Terms</a>
-            <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
+            <a href="#" className="hover:text-foreground transition-colors">Privacy</a> */}
           </div>
         </div>
       </footer>

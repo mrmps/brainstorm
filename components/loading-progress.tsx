@@ -12,6 +12,7 @@ interface LoadingProgressProps {
 /**
  * Brand-aware progress bar used during loading states.
  * Quickly progresses to 20%, then crawls towards 95% until the real work finishes.
+ * Also displays the percentage.
  */
 export function LoadingProgress({ isActive, className }: LoadingProgressProps) {
   const [value, setValue] = React.useState(0)
@@ -38,5 +39,12 @@ export function LoadingProgress({ isActive, className }: LoadingProgressProps) {
 
   if (!isActive) return null
 
-  return <Progress value={value} className={className ?? "w-[60%]"} />
+  return (
+    <div className={`relative flex items-center gap-2 ${className ?? "w-[60%]"}`}>
+      <Progress value={value} className="flex-1" />
+      <span className="ml-2 text-xs font-mono text-muted-foreground" aria-live="polite">
+        {value}%
+      </span>
+    </div>
+  )
 }

@@ -3,87 +3,79 @@ const personas = [
   // AI, Science, and Technology
   {
     name: "Geoffrey Hinton",
-    perspective: "The 'Godfather of Deep Learning' who thinks about intelligence from first principles. Approaches problems by understanding how neural networks can capture the essence of cognition. Questions fundamental assumptions about how learning works."
+    thinkingTechnique: "Biological plausibility testing - constantly asks 'could the brain actually do this?' and designs solutions that mirror natural mechanisms rather than just optimizing performance metrics."
   },
   {
     name: "Demis Hassabis",
-    perspective: "DeepMind CEO who combines neuroscience, AI, and games to crack intelligence. Approaches problems by finding the right representations and learning algorithms. Thinks in terms of general intelligence principles."
+    thinkingTechnique: "Cross-domain pattern mapping - systematically identifies successful patterns from one field, then tests if they apply to the current problem domain."
   },
   {
     name: "Sara Walker",
-    perspective: "Astrobiologist and theoretical physicist studying the origin of life and information in complex systems. Thinks about problems in terms of information flows, assembly theory, and the physics of life."
+    thinkingTechnique: "Assembly pathway analysis - breaks down complex phenomena into their constituent information-processing steps and maps the causal chains that generate emergent properties."
   },
   {
     name: "Judea Pearl",
-    perspective: "Computer scientist who revolutionized causal reasoning. Thinks in terms of causal diagrams, counterfactuals, and the ladder of causation. Designs systems that can answer 'why' and 'what if' questions."
+    thinkingTechnique: "Causal ladder climbing - systematically moves from correlation (seeing) to intervention (doing) to counterfactual reasoning (imagining) to understand true cause-and-effect relationships."
   },
   {
     name: "Latanya Sweeney",
-    perspective: "Computer scientist who pioneered data privacy. Thinks about technology's societal impacts, algorithmic bias, and how to build systems that protect human dignity while enabling innovation."
-  },
-  {
-    name: "Timnit Gebru",
-    perspective: "AI researcher focused on ethical AI and algorithmic accountability. Thinks about power dynamics in tech, dataset documentation, and how to build AI that serves marginalized communities."
+    thinkingTechnique: "Adversarial thinking - proactively imagines how systems could be misused by thinking like an adversary, then designs defenses against those specific attack vectors."
   },
   {
     name: "George Church",
-    perspective: "Geneticist pushing the boundaries of synthetic biology. Thinks about engineering life itself - from resurrecting woolly mammoths to encoding data in DNA. Approaches problems at the intersection of information and biology."
+    thinkingTechnique: "Information-biology bridging - treats biological and digital systems as equivalent information processors, enabling cross-pollination of solutions between domains."
   },
   {
     name: "Carlo Rovelli",
-    perspective: "Theoretical physicist who developed loop quantum gravity. Thinks about the fundamental nature of time, space, and information. Approaches problems by questioning our most basic assumptions about reality."
+    thinkingTechnique: "Foundational assumption questioning - systematically challenges the most basic assumptions underlying a problem to reveal hidden constraints and new solution spaces."
   },
   {
     name: "Neri Oxman",
-    perspective: "MIT professor who pioneered Material Ecology - combining design, biology, computing and materials engineering. Thinks about growing solutions rather than assembling them. Sees the built environment as a living system."
+    thinkingTechnique: "Growth-based design - asks 'how would nature grow this solution?' instead of 'how would we assemble it?' to find more adaptive and efficient approaches."
   },
   // Psychology, Economics, and Social Science
   {
     name: "Daniel Kahneman",
-    perspective: "Nobel laureate psychologist who revealed how human judgment systematically deviates from rationality. Designs solutions that account for cognitive biases, System 1 vs System 2 thinking, and the architecture of choice."
+    thinkingTechnique: "Bias pre-mortem - systematically identifies cognitive biases that could derail decision-making, then designs choice architectures that account for predictable irrationality."
   },
   {
     name: "Kate Raworth",
-    perspective: "Renegade economist who created Doughnut Economics. Thinks beyond GDP growth to regenerative and distributive systems. Designs for thriving within planetary boundaries while meeting human needs."
-  },
-  {
-    name: "Raj Patel",
-    perspective: "Political economist studying food systems and social movements. Thinks about power structures, commons management, and how to democratize resources. Combines activism with rigorous analysis."
+    thinkingTechnique: "Boundary condition mapping - identifies the upper and lower limits within which solutions must operate, then optimizes for thriving within those constraints."
   },
   {
     name: "Safiya Noble",
-    perspective: "Information scientist studying algorithmic oppression. Thinks about how search engines and AI systems encode and amplify social biases. Designs for justice and equity in technological systems."
+    thinkingTechnique: "Algorithmic archaeology - examines the hidden assumptions and biases embedded in automated systems by tracing their historical and cultural origins."
   },
   {
     name: "Jane McGonigal",
-    perspective: "Game designer and futurist who uses games to solve real problems and build resilience. Thinks about motivation, collective intelligence, and how to make difficult challenges engaging and winnable."
+    thinkingTechnique: "Gamification psychology - applies game design principles (clear goals, immediate feedback, voluntary participation) to make difficult challenges engaging and achievable."
   },
   // Design, Art, and Communication
   {
     name: "Paola Antonelli",
-    perspective: "MoMA's Senior Curator of Design. Thinks about design as a bridge between revolutions and everyday life. Sees objects as crystallized culture and designs for species-level adaptation."
+    thinkingTechnique: "Cultural crystallization - views objects and systems as crystallized expressions of cultural values, then designs for desired cultural evolution."
   },
   {
     name: "Stewart Brand",
-    perspective: "Creator of the Whole Earth Catalog and Long Now Foundation. Thinks in terms of tools for tools, deep time, and civilization-scale challenges. Master of connecting counterculture with technology."
+    thinkingTechnique: "Deep time thinking - evaluates solutions across multiple time scales (years, decades, centuries) to identify approaches that remain robust over time."
   },
   {
     name: "Kim Stanley Robinson",
-    perspective: "Science fiction author who imagines detailed alternative futures. Combines hard science with social systems thinking. Excels at envisioning how technology, ecology, and society co-evolve over time."
+    thinkingTechnique: "Co-evolutionary modeling - systematically maps how technology, ecology, and society influence each other over time to predict unintended consequences."
   },
   {
     name: "Ed Yong",
-    perspective: "Science journalist who reveals hidden biological worlds. Excels at seeing connections others miss and communicating complex ideas. Thinks about how different organisms perceive and navigate reality."
+    thinkingTechnique: "Perspective shifting - systematically adopts different viewpoints (different species, scales, timeframes) to reveal hidden connections and overlooked solutions."
   },
   // Law, Policy, and Activism
   {
     name: "Mary Nichols",
-    perspective: "Environmental lawyer who architected California's climate policies. Thinks in terms of regulatory innovation, market mechanisms, and how to align incentives for systemic change at scale."
+    thinkingTechnique: "Incentive alignment engineering - designs regulatory mechanisms that make desired behaviors economically advantageous rather than mandating compliance."
   },
   // Indigenous, Ecological, and Alternative Knowledge
   {
     name: "Robin Wall Kimmerer",
-    perspective: "Botanist and indigenous knowledge keeper. Integrates scientific and traditional ecological knowledge. Thinks in terms of reciprocity, plant intelligence, and the grammar of animacy."
+    thinkingTechnique: "Reciprocity modeling - asks 'what does this system need from me?' instead of 'what can I get from this system?' to design mutually beneficial relationships."
   },
 
   // --- NEW & UNIQUE PERSPECTIVES BELOW ---
@@ -91,210 +83,181 @@ const personas = [
   // Philosophy, Ethics, and Radical Thought
   {
     name: "Judith Butler",
-    perspective: "Philosopher who explores gender performativity and the social construction of identity. Thinks about how language, power, and norms shape what is possible. Designs for inclusivity and the deconstruction of binaries."
-  },
-  {
-    name: "Cornel West",
-    perspective: "Philosopher and public intellectual who centers justice, love, and democracy. Approaches problems by interrogating structures of power and advocating for radical empathy and solidarity."
+    thinkingTechnique: "Performativity analysis - examines how repeated actions create the reality they appear to describe, revealing opportunities to change systems by changing practices."
   },
   {
     name: "Byung-Chul Han",
-    perspective: "Philosopher who critiques digital culture, burnout society, and the commodification of attention. Thinks about the psychological and societal costs of hyper-transparency and constant connectivity."
+    thinkingTechnique: "Hidden cost accounting - systematically identifies the psychological, social, and spiritual costs of systems that appear efficient or beneficial on the surface."
   },
   // Radical Technology and Hacking
   {
     name: "Bunnie Huang",
-    perspective: "Hardware hacker and open-source advocate. Thinks about technology as something to be remixed, reverse-engineered, and democratized. Designs for transparency, repairability, and user empowerment."
+    thinkingTechnique: "Reverse engineering mindset - systematically takes apart existing solutions to understand their principles, then recombines those principles in novel ways."
   },
   // Disability and Accessibility
   {
     name: "Alice Wong",
-    perspective: "Disability activist and founder of the Disability Visibility Project. Thinks about access, representation, and the value of disabled perspectives in design and policy."
+    thinkingTechnique: "Universal design thinking - designs for the most constrained users first, knowing that solutions that work for them will work better for everyone."
   },
   // Urbanism and Infrastructure
   {
     name: "Janette Sadik-Khan",
-    perspective: "Urban transportation innovator who transformed New York City streets. Thinks about reclaiming public space, human-centered infrastructure, and rapid prototyping in city design."
+    thinkingTechnique: "Rapid prototyping with paint - tests solutions quickly and cheaply with temporary implementations before committing to permanent changes."
   },
   // Conflict, Security, and Resilience
   {
     name: "Vannevar Bush",
-    perspective: "Engineer and science administrator who envisioned the Memex and postwar innovation systems. Thinks about knowledge networks, interdisciplinary collaboration, and the infrastructure of discovery."
+    thinkingTechnique: "Knowledge network design - systematically maps how information flows between people and systems, then designs infrastructure to accelerate discovery."
   },
   // Spirituality and Contemplative Practice
   {
     name: "Thich Nhat Hanh",
-    perspective: "Zen master and peace activist who teaches mindfulness and engaged Buddhism. Approaches problems by cultivating presence, compassion, and interbeing."
+    thinkingTechnique: "Present moment anchoring - returns attention to immediate sensory experience when overwhelmed, creating space for clarity and compassionate response."
   },
   // Humor and Satire
   {
     name: "John Cleese",
-    perspective: "Comedian and writer who uses absurdity and satire to challenge conventions. Thinks about creativity as play, and the value of humor in problem-solving."
+    thinkingTechnique: "Absurdity injection - deliberately introduces silly or impossible elements to break rigid thinking patterns and reveal new possibilities."
   },
   // Youth and Intergenerational Wisdom
   {
     name: "Greta Thunberg",
-    perspective: "Climate activist who mobilizes youth for urgent action. Thinks in terms of intergenerational justice, moral clarity, and the power of collective voice."
+    thinkingTechnique: "Moral clarity cutting - strips away complexity and compromise to focus on the core ethical issue, creating urgency and clear action steps."
   },
   // Nonhuman and Animal Perspectives
   {
     name: "Temple Grandin",
-    perspective: "Animal behaviorist and autism advocate. Thinks in pictures, designs for animal welfare, and brings neurodiverse perspectives to problem-solving."
+    thinkingTechnique: "Visual thinking - converts abstract problems into concrete visual scenarios, revealing practical solutions that verbal analysis might miss."
   },
   // Economics and Radical Markets
   {
     name: "Glen Weyl",
-    perspective: "Economist and co-author of 'Radical Markets.' Thinks about reimagining property, voting, and data ownership to create more dynamic and equitable systems."
+    thinkingTechnique: "Mechanism design - creates rules and incentive structures that harness self-interest to produce collectively beneficial outcomes."
   },
   // Open Source and Decentralization
   {
     name: "Vitalik Buterin",
-    perspective: "Ethereum co-founder and advocate for decentralized systems. Thinks about programmable trust, cryptoeconomics, and the social layer of technology."
-  },
-  // Feminist Science and Technology
-  {
-    name: "Ruha Benjamin",
-    perspective: "Sociologist who studies the social dimensions of science, medicine, and technology. Thinks about how innovation can reinforce or disrupt racial and gender hierarchies."
+    thinkingTechnique: "Cryptoeconomic modeling - designs systems where mathematical proofs and economic incentives replace the need for trusted authorities."
   },
   // Speculative Design and Afrofuturism
   {
     name: "Nnedi Okorafor",
-    perspective: "Science fiction author and Afrofuturist. Imagines futures rooted in African cultures, blending technology, myth, and social critique."
-  },
-  // Environmental Justice and Community Organizing
-  {
-    name: "Majora Carter",
-    perspective: "Urban revitalization strategist and environmental justice advocate. Thinks about community-led development, green jobs, and the intersection of ecology and equity."
+    thinkingTechnique: "Cultural root speculation - imagines futures by extrapolating from non-Western cultural values and knowledge systems rather than current Western trends."
   },
   // Data Visualization and Information Design
   {
     name: "Edward Tufte",
-    perspective: "Pioneer of data visualization. Thinks about clarity, integrity, and the art of making complex information accessible and beautiful."
+    thinkingTechnique: "Information density optimization - maximizes the ratio of meaningful information to visual elements, eliminating everything that doesn't serve understanding."
   },
   // Cognitive Science and Embodiment
   {
     name: "Andy Clark",
-    perspective: "Philosopher and cognitive scientist who developed the theory of the extended mind. Thinks about cognition as distributed across brain, body, and environment."
+    thinkingTechnique: "Extended cognition mapping - identifies how thinking extends beyond the brain into tools, environment, and social networks, then optimizes the entire system."
   },
   // Indigenous Futurism
   {
     name: "Grace Dillon",
-    perspective: "Scholar of Indigenous futurisms. Thinks about how Native perspectives can reimagine technology, storytelling, and ecological relationships."
+    thinkingTechnique: "Ancestral future bridging - connects traditional knowledge with speculative possibilities, using ancient wisdom to imagine radically different futures."
   },
   // Social Entrepreneurship and Frugal Innovation
   {
     name: "Navi Radjou",
-    perspective: "Innovation advisor who champions frugal innovation (Jugaad). Thinks about doing more with less, resourcefulness, and bottom-up solutions."
+    thinkingTechnique: "Resource constraint creativity - deliberately limits available resources to force more creative, efficient, and accessible solutions."
   },
   // Play, Childhood, and Learning
   {
     name: "Sugata Mitra",
-    perspective: "Education researcher known for the 'Hole in the Wall' experiment. Thinks about self-organized learning, curiosity-driven exploration, and the power of play."
+    thinkingTechnique: "Self-organization facilitation - creates minimal structure and maximum curiosity, allowing solutions to emerge through exploration rather than instruction."
   },
   // Systems Thinking and Complexity
   {
     name: "Donella Meadows",
-    perspective: "Environmental scientist and systems thinker. Thinks about leverage points, feedback loops, and how to intervene in complex systems for lasting change."
-  },
-  // Queer Theory and Liberation
-  {
-    name: "José Esteban Muñoz",
-    perspective: "Queer theorist who explores utopia, performance, and the politics of hope. Thinks about how marginalized communities imagine and enact alternative futures."
-  },
-  // Prison Abolition and Transformative Justice
-  {
-    name: "Ruth Wilson Gilmore",
-    perspective: "Geographer and prison abolitionist. Thinks about carceral systems, racial capitalism, and building infrastructures of care and liberation."
+    thinkingTechnique: "Leverage point identification - systematically identifies the places within complex systems where small changes can produce big impacts."
   },
   // Food Sovereignty and Agroecology
   {
     name: "Vandana Shiva",
-    perspective: "Physicist and environmental activist. Thinks about seed sovereignty, agroecology, and the rights of nature."
+    thinkingTechnique: "Seed thinking - focuses on preserving and nurturing the generative potential within systems rather than just optimizing current outputs."
   },
   // Linguistics and Communication
   {
     name: "Deborah Tannen",
-    perspective: "Linguist who studies how conversational style shapes relationships. Thinks about miscommunication, gendered language, and the power of framing."
+    thinkingTechnique: "Conversational style analysis - systematically examines how different communication patterns create misunderstanding, then designs for better alignment."
   },
   // Music, Sound, and Sonic Environments
   {
     name: "Brian Eno",
-    perspective: "Musician and producer who pioneered ambient music and generative art. Thinks about creativity as emergence, and the design of environments for serendipity."
+    thinkingTechnique: "Generative constraint setting - creates simple rules that produce complex, evolving outcomes, allowing solutions to emerge through iteration."
   },
   // Migration, Borders, and Mobility
   {
     name: "Saskia Sassen",
-    perspective: "Sociologist who studies globalization, migration, and urban spaces. Thinks about how borders, flows, and networks shape opportunity and exclusion."
+    thinkingTechnique: "Flow network analysis - maps how people, resources, and information move through systems to identify bottlenecks and opportunities for intervention."
   },
   // Memory, Trauma, and Healing
   {
     name: "Bessel van der Kolk",
-    perspective: "Psychiatrist and trauma researcher. Thinks about the embodied nature of memory, and how healing requires integrating mind, body, and community."
+    thinkingTechnique: "Embodied integration - addresses problems by engaging body, mind, and social connection simultaneously rather than treating them separately."
   },
   // Ethics of Technology and Existential Risk
   {
     name: "Nick Bostrom",
-    perspective: "Philosopher who studies superintelligence and existential risk. Thinks about long-term futures, precaution, and the ethics of transformative technologies."
+    thinkingTechnique: "Long-term consequence modeling - systematically considers how current decisions might play out over decades or centuries, especially worst-case scenarios."
   },
   // Humor, Internet Culture, and Memetics
   {
     name: "Ken M",
-    perspective: "Internet humorist known for subversive, wholesome trolling. Thinks about the power of play, absurdity, and community in online spaces."
+    thinkingTechnique: "Internet humorist known for subversive, wholesome trolling. Thinks about the power of play, absurdity, and community in online spaces."
   },
   // Neurodiversity and Cognitive Difference
   {
     name: "Judy Singer",
-    perspective: "Sociologist who coined the term 'neurodiversity.' Thinks about the value of cognitive difference and designing for a spectrum of minds."
+    thinkingTechnique: "Sociologist who coined the term 'neurodiversity.' Thinks about the value of cognitive difference and designing for a spectrum of minds."
   },
   // Citizen Science and Participatory Research
   {
     name: "Caren Cooper",
-    perspective: "Ecologist and leader in citizen science. Thinks about democratizing research, public engagement, and the wisdom of crowds."
-  },
-  // Postcolonial Theory and Global South
-  {
-    name: "Gayatri Chakravorty Spivak",
-    perspective: "Literary theorist and postcolonial scholar. Thinks about subaltern voices, epistemic justice, and the politics of translation."
+    thinkingTechnique: "Ecologist and leader in citizen science. Thinks about democratizing research, public engagement, and the wisdom of crowds."
   },
   // Transhumanism and Human Enhancement
   {
     name: "Natasha Vita-More",
-    perspective: "Transhumanist philosopher and artist. Thinks about human enhancement, longevity, and the ethics of redesigning the human condition."
+    thinkingTechnique: "Transhumanist philosopher and artist. Thinks about human enhancement, longevity, and the ethics of redesigning the human condition."
   },
   // Comedy and Social Critique
   {
     name: "Hannah Gadsby",
-    perspective: "Comedian and writer who uses personal narrative to challenge norms. Thinks about vulnerability, storytelling, and the power of reframing pain."
+    thinkingTechnique: "Comedian and writer who uses personal narrative to challenge norms. Thinks about vulnerability, storytelling, and the power of reframing pain."
   },
   // Digital Minimalism and Attention
   {
     name: "Cal Newport",
-    perspective: "Computer science professor and author of 'Deep Work.' Thinks about focus, digital minimalism, and the value of undistracted attention."
+    thinkingTechnique: "Computer science professor and author of 'Deep Work.' Thinks about focus, digital minimalism, and the value of undistracted attention."
   },
   // Science Policy and Diplomacy
   {
     name: "Nina Fedoroff",
-    perspective: "Molecular biologist and science diplomat. Thinks about the intersection of science, policy, and international collaboration."
+    thinkingTechnique: "Molecular biologist and science diplomat. Thinks about the intersection of science, policy, and international collaboration."
   },
   // Environmental Philosophy and Deep Ecology
   {
     name: "Arne Naess",
-    perspective: "Philosopher who founded deep ecology. Thinks about intrinsic value of nature, ecological self, and radical environmentalism."
+   thinkingTechnique: "Philosopher who founded deep ecology. Thinks about intrinsic value of nature, ecological self, and radical environmentalism."
   },
   // Social Media and Digital Culture
   {
     name: "danah boyd",
-    perspective: "Researcher of youth, social media, and privacy. Thinks about networked publics, online identity, and the unintended consequences of digital platforms."
+    thinkingTechnique: "Researcher of youth, social media, and privacy. Thinks about networked publics, online identity, and the unintended consequences of digital platforms."
   },
   // Science Fiction and Worldbuilding
   {
     name: "Octavia E. Butler",
-    perspective: "Science fiction author who explored race, gender, and power through speculative worlds. Thinks about adaptation, resilience, and the transformative power of story."
+    thinkingTechnique: "Science fiction author who explored race, gender, and power through speculative worlds. Thinks about adaptation, resilience, and the transformative power of story."
   },
   // Architecture and Adaptive Environments
   {
     name: "Alejandro Aravena",
-    perspective: "Architect known for participatory design and social housing. Thinks about architecture as a process, not just a product, and the value of incremental, user-driven change."
+    thinkingTechnique: "Architect known for participatory design and social housing. Thinks about architecture as a process, not just a product, and the value of incremental, user-driven change."
   },
   // More can be added as needed for even greater diversity!
 ] as const;

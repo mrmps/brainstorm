@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { generateText } from "ai";
-import { openai } from "@ai-sdk/openai";
+import OpenAI from "openai";
 import personas from "@/lib/personas";
+import { stringSimilarity } from "string-similarity-js";
 
 // Typesafe interfaces
 interface GeneratedIdea {
@@ -19,9 +19,16 @@ if (!process.env.CONTEXTUAL_API_KEY) {
   throw new Error("CONTEXTUAL_API_KEY is not set");
 }
 
+if (!process.env.INFERENCE_API_KEY) {
+  throw new Error("INFERENCE_API_KEY is not set");
+}
+
 const CTXL_API_KEY = process.env.CONTEXTUAL_API_KEY;
 
-console.log("CTXL_API_KEY", CTXL_API_KEY);
+const openai = new OpenAI({
+  baseURL: "https://api.inference.net/v1",
+  apiKey: process.env.INFERENCE_API_KEY,
+});
 
 export async function POST(request: Request) {
   try {
@@ -52,15 +59,21 @@ async function generateIdeas(query: string) {
   };
 
   try {
+    // STEP before try: record the overall route start time
+    stepStart("route");
+
     // Step 1: Generate ideas for each persona with structured output
     stepStart("generation");
     const ideaPromises = personas.map(async (persona) => {
       const genStart = Date.now();
       
       // Generate ideas directly in a parseable format
-      const { text } = await generateText({
-        model: openai("gpt-4.1-mini"),
-        prompt: `You are ${persona.name}: ${persona.perspective}
+      const completion = await openai.chat.completions.create({
+        model: "deepseek/deepseek-v3-0324/fp-8",
+        messages: [
+          {
+            role: "user",
+            content: `You are ${persona.name}: ${persona.thinkingTechnique}
 
 The user is asking: "${query}"
 
@@ -84,10 +97,14 @@ You can add thoughts inside your response, but once your are ready to answer, ma
 <description>Next explanation with all the context and specifics needed to understand and implement this idea.</description>
 </idea>
 
-Continue this pattern for all 10 ideas. Each idea must be wrapped in <idea> tags with <title> and <description> sub-tags.`,
+Continue this pattern for all 10 ideas. Each idea must be wrapped in <idea> tags with <title> and <description> sub-tags.`
+          }
+        ],
+        temperature: 0.8,
       });
       
       const genEnd = Date.now();
+      const text = completion.choices[0]?.message?.content || "";
 
       // Parse the structured text directly - no second LLM call needed
       const ideas = parseIdeasXML(text, persona.name);
@@ -105,11 +122,32 @@ Continue this pattern for all 10 ideas. Each idea must be wrapped in <idea> tags
     stepEnd("generation");
 
     // Flatten ideas and collect per-persona latency
-    const allIdeas: Omit<Idea, "rank">[] = allIdeasResults.flatMap(r => r.ideas);
+    let allIdeas: Omit<Idea, "rank">[] = allIdeasResults.flatMap(r => r.ideas);
     const perPersonaLatency = allIdeasResults.map(r => ({
       persona: r.persona,
       generation_ms: r.latency.generation_ms,
     }));
+
+    // === FILTER OUT NEAR-DUPLICATE IDEAS (almost exactly the same) ===
+    // We'll use a high similarity threshold (e.g., 0.97) to only filter almost identical ideas
+    const SIMILARITY_THRESHOLD = 0.97;
+    const uniqueIdeas: Omit<Idea, "rank">[] = [];
+    for (const idea of allIdeas) {
+      // Compare against all previously accepted ideas
+      const isDuplicate = uniqueIdeas.some(existing => {
+        // Compare both title+description
+        const sim = stringSimilarity(
+          (idea.title + " " + idea.description).toLowerCase(),
+          (existing.title + " " + existing.description).toLowerCase()
+        );
+        return sim >= SIMILARITY_THRESHOLD;
+      });
+      if (!isDuplicate) {
+        uniqueIdeas.push(idea);
+      }
+    }
+    allIdeas = uniqueIdeas;
+    // === END FILTER ===
 
     // Step 3: Ranking via Contextual.ai rerank API
     stepStart("ranking");
@@ -180,18 +218,27 @@ Continue this pattern for all 10 ideas. Each idea must be wrapped in <idea> tags
     );
     stepEnd("finalize");
 
+    // === ROUTE END TIMING ===
+    stepEnd("route");
+
     // Compose latency info
     const latency = {
+      total_ms: timings["route_latency_ms"],
       generation_total_ms: timings["generation_latency_ms"],
       ranking_ms: timings["ranking_latency_ms"],
       finalize_ms: timings["finalize_latency_ms"],
       per_persona: perPersonaLatency,
     };
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       ideas: finalIdeas,
       latency,
     });
+
+    // Attach total latency header to response for easy client access
+    response.headers.set("x-route-latency-ms", String(latency.total_ms ?? ""));
+
+    return response;
   } catch (error) {
     console.error("Error generating ideas:", error);
     return NextResponse.json({ error: "Failed to generate ideas" }, { status: 500 });
@@ -205,18 +252,25 @@ function parseIdeasXML(text: string, personaName: string): Omit<Idea, "rank">[] 
   // Match all <idea> blocks
   const ideaMatches = text.matchAll(/<idea>\s*<title>([\s\S]*?)<\/title>\s*<description>([\s\S]*?)<\/description>\s*<\/idea>/g);
   
+  // Regex used to detect any leftover XML tags inside the extracted content.
+  const leftoverTagRegex = /<\s*\/?\s*(idea|title|description)\b/i;
+  
   for (const match of ideaMatches) {
     const title = match[1].trim();
     const description = match[2].trim();
-    
-    if (title && description) {
-      ideas.push({
-        id: crypto.randomUUID(),
-        title,
-        description,
-        persona: personaName,
-      });
+
+    // Skip ideas that still contain un-parsed XML markers – indicates malformed input.
+    if (!title || !description) continue;
+    if (leftoverTagRegex.test(title) || leftoverTagRegex.test(description)) {
+      continue;
     }
+    
+    ideas.push({
+      id: crypto.randomUUID(),
+      title,
+      description,
+      persona: personaName,
+    });
   }
   
   return ideas;
