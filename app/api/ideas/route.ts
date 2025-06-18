@@ -30,6 +30,13 @@ const openai = new OpenAI({
   apiKey: process.env.INFERENCE_API_KEY,
 });
 
+// Type guard for identifying rate-limit errors without using `any`
+function isRateLimitError(error: unknown): error is { status?: number; code?: number } {
+  if (typeof error !== "object" || error === null) return false;
+  const maybeErr = error as { status?: number; code?: number };
+  return maybeErr.status === 429 || maybeErr.code === 429;
+}
+
 export async function POST(request: Request) {
   try {
     const { query } = await request.json();
@@ -69,12 +76,14 @@ async function generateIdeas(query: string) {
       
       try {
         // Generate ideas directly in a parseable format
-        const completion = await openai.chat.completions.create({
-          model: "deepseek/deepseek-v3-0324/fp-8",
-          messages: [
-            {
-              role: "user",
-              content: `You are ${persona.name}: ${persona.thinkingTechnique}
+        // Narrow return type down to just what we read later (choices[].message.content)
+        type ChatCompletionLite = {
+          choices: Array<{ message: { content?: string | null } }>;
+        };
+
+        let completion: ChatCompletionLite;
+
+        const userPrompt = `You are ${persona.name}: ${persona.thinkingTechnique}
 
 The user is asking: "${query}"
 
@@ -98,11 +107,26 @@ You can add thoughts inside your response, but once your are ready to answer, ma
 <title>Next creative title</title>
 </idea>
 
-Continue this pattern for all 10 ideas. Each idea must be wrapped in <idea> tags with <description> and <title> sub-tags.`
-            }
-          ],
-          temperature: 0.8,
-        });
+Continue this pattern for all 10 ideas. Each idea must be wrapped in <idea> tags with <description> and <title> sub-tags.`;
+
+        const createCompletion = async (model: string): Promise<ChatCompletionLite> => {
+          return await openai.chat.completions.create({
+            model,
+            messages: [{ role: "user", content: userPrompt }],
+            temperature: 0.8,
+          }) as unknown as ChatCompletionLite;
+        };
+
+        try {
+          completion = await createCompletion("deepseek/deepseek-v3-0324/fp-8");
+        } catch (error: unknown) {
+          if (isRateLimitError(error)) {
+            console.warn(`Model capacity exceeded for persona ${persona.name}, falling back to deepseek-r1`);
+            completion = await createCompletion("deepseek/deepseek-r1/fp-8");
+          } else {
+            throw error;
+          }
+        }
         
         const genEnd = Date.now();
         const text = completion.choices[0]?.message?.content || "";
