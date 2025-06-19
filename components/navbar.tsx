@@ -1,6 +1,7 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { Github } from "lucide-react";
 
 export default function Navbar() {
   return (
@@ -12,6 +13,17 @@ export default function Navbar() {
             <span className="ml-2 flex items-center h-full mt-1 text-lg">Brainstorm</span>
           </span>
         </Link>
+        <div className="flex items-center">
+          <Link 
+            href="https://github.com/mrmps/brainstorm" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-muted/50"
+          >
+            <Github className="h-4 w-4" />
+            <span>GitHub</span>
+          </Link>
+        </div>
         {/* Uncomment if future links are needed */}
         {/*
         <div className="flex items-center gap-8 text-sm">
