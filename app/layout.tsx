@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     title: "Brainstorm – Every possibility. Ranked.",
     description:
         "Generate 500+ answers to any question, then see the best ones first. No more wondering if there's something better.",
-    images: ["https://brainstorm.cool/twitter-image.jpg"],
+    images: ["https://brainstorm.cool/opengraph-image.jpg"],
     creator: "@brainstormcool",
   },
   icons: {
@@ -85,10 +85,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        {/* Fallback OG image for crawlers that don't parse metadata */}
-        <meta property="og:image" content="https://brainstorm.cool/opengraph-image.jpg" />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
