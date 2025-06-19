@@ -1,7 +1,7 @@
 import * as React from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { Github } from "lucide-react";
+import Image from "next/image"; 
+import { GitHubStarsButton } from "@/components/animate-ui/buttons/github-stars";
 
 export default function Navbar() {
   return (
@@ -14,15 +14,12 @@ export default function Navbar() {
           </span>
         </Link>
         <div className="flex items-center">
-          <Link 
-            href="https://github.com/mrmps/brainstorm" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-muted/50"
-          >
-            <Github className="h-4 w-4" />
-            <span>GitHub</span>
-          </Link>
+          <GitHubStarsButton 
+            username="mrmps" 
+            repo="brainstorm"
+            formatted={true}
+            inView={true}
+          />
         </div>
         {/* Uncomment if future links are needed */}
         {/*
